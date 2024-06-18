@@ -6,7 +6,7 @@ import (
 
 	"github.com/enockjeremi/queswer/config"
 	"github.com/enockjeremi/queswer/models"
-	"github.com/gin-gonic/gin"
+	"github.com/enockjeremi/queswer/routes"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -28,13 +28,7 @@ func main() {
 		&models.User{},
 	)
 
-	r := gin.Default()
-
-	r.GET("/", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{
-			"success": true,
-		})
-	})
+	r := routes.SetupRoute()
 
 	r.Run(":1341")
 }
