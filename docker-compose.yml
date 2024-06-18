@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres
+    container_name: queswer
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: queswer
+      POSTGRES_USER: quest
+      POSTGRES_PASSWORD: answ
+    volumes:
+      - ./db:/var/lib/postgresql/data
+      
+  pgadmin:
+    image: dpage/pgadmin4
+
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=enockjeremi@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=adminenock
+
+    ports:
+      - 5050:80
