@@ -9,8 +9,7 @@ import (
 )
 
 type AnswerReponse struct {
-	Content    string `json:"content"`
-	QuestionID uint   `json:"question"`
+	Content string `json:"content"`
 }
 
 type QuestionReponse struct {
@@ -24,7 +23,7 @@ type QuestionReponse struct {
 func QuestionSerializer(q []models.Question) []QuestionReponse {
 	var questionResponse []QuestionReponse
 	for _, question := range q {
-		var answerReponse []AnswerReponse
+		var answerReponse = make([]AnswerReponse, 0)
 		for _, answer := range question.Answer {
 			answerReponse = append(answerReponse, AnswerReponse{
 				Content: answer.Content,
@@ -68,6 +67,54 @@ func PostQuestion(c *gin.Context) {
 	}
 }
 
-func GetOneQuestion(c *gin.Context) {}
-func PutQuestion(c *gin.Context)    {}
-func DeleteQuestion(c *gin.Context) {}
+func GetOneQuestion(c *gin.Context) {
+	id := c.Params.ByName("id")
+	var question models.Question
+	err := services.GetOneQuestion(&question, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "question not found",
+		})
+	} else {
+		c.JSON(http.StatusOK, question)
+	}
+}
+func PutQuestion(c *gin.Context) {
+	var question models.Question
+	id := c.Params.ByName("id")
+	err := services.GetOneQuestion(&question, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "question not found",
+		})
+	}
+	c.BindJSON(&question)
+	err = services.UpdateQuestion(&question, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "question not found",
+		})
+	} else {
+		c.JSON(http.StatusOK, question)
+	}
+
+}
+func DeleteQuestion(c *gin.Context) {
+	var question models.Question
+	id := c.Params.ByName("id")
+	err := services.GetOneQuestion(&question, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "question not found",
+		})
+	}
+	c.BindJSON(&question)
+	err = services.DeleteQuestion(&question, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "question not found",
+		})
+	} else {
+		c.JSON(http.StatusOK, question)
+	}
+}

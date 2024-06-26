@@ -1,8 +1,6 @@
 package services
 
 import (
-	"fmt"
-
 	"github.com/enockjeremi/queswer/config"
 	"github.com/enockjeremi/queswer/models"
 )
@@ -22,14 +20,13 @@ func CreateQuestion(question *models.Question) (err error) {
 }
 
 func GetOneQuestion(question *models.Question, id string) (err error) {
-	if err = config.DB.Where("id = ?", id).First(question).Error; err != nil {
+	if err = config.DB.Where("id = ?", id).Preload("Answer").First(question).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 func UpdateQuestion(question *models.Question, id string) (err error) {
-	fmt.Println(question)
 	config.DB.Save(question)
 	return nil
 }

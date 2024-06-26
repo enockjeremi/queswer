@@ -17,7 +17,9 @@ func main() {
 	if err != nil {
 		log.Fatal("Error load .env file")
 	}
-	config.DB, err = gorm.Open(postgres.Open(config.DBUrl(config.BuildDBConfig())), &gorm.Config{})
+	config.DB, err = gorm.Open(postgres.Open(config.DBUrl(config.BuildDBConfig())), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	if err != nil {
 		fmt.Println("statuse: ", err)
 	}
