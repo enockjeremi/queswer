@@ -21,7 +21,7 @@ type QuestionReponse struct {
 }
 
 func QuestionSerializer(q []models.Question) []QuestionReponse {
-	var questionResponse []QuestionReponse
+	questionResponse := make([]QuestionReponse, 0)
 	for _, question := range q {
 		var answerReponse = make([]AnswerReponse, 0)
 		for _, answer := range question.Answer {
@@ -115,6 +115,8 @@ func DeleteQuestion(c *gin.Context) {
 			"message": "question not found",
 		})
 	} else {
-		c.JSON(http.StatusOK, question)
+		c.JSON(http.StatusOK, gin.H{
+			"messages": "deleted successfully",
+		})
 	}
 }
