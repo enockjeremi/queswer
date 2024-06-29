@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -21,7 +22,6 @@ func GetAllAnswer(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, answers)
-
 }
 
 func PostAnswer(c *gin.Context) {
@@ -36,13 +36,13 @@ func PostAnswer(c *gin.Context) {
 
 	err := services.GetOneQuestion(&question, questionID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "question not found",
-		})
+		NotFoundError(c, "question not found")
+		return
 	} else {
 		err := services.CreateAnswer(&answer)
 		if err != nil {
-			c.AbortWithStatus(http.StatusNotFound)
+			NotFoundError(c, "Could not create answer")
+			return
 		} else {
 			c.JSON(http.StatusCreated, answer)
 		}
@@ -55,7 +55,8 @@ func GetOneAnswer(c *gin.Context) {
 	id := c.Params.ByName("id")
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		MessageNotFound(c, "answer not found")
+		NotFoundError(c, "answer not found")
+		return
 	}
 	c.JSON(http.StatusOK, answer)
 }
@@ -64,13 +65,15 @@ func PutAnswer(c *gin.Context) {
 	id := c.Params.ByName("id")
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		MessageNotFound(c, "answer not found")
+		NotFoundError(c, "answer not found")
+		return
 	}
 	c.BindJSON(&answer)
 
 	err = services.UpdateAnswer(&answer, id)
 	if err != nil {
-		MessageNotFound(c, "answer not found")
+		NotFoundError(c, fmt.Sprintf("Could not update question ID: %v", id))
+		return
 	} else {
 		c.JSON(http.StatusOK, answer)
 	}
@@ -81,25 +84,19 @@ func DeleteAnswer(c *gin.Context) {
 	id := c.Params.ByName("id")
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		MessageNotFound(c, "answer not found")
+		NotFoundError(c, "answer not found")
+		return
 	}
-	c.BindJSON(&answer)
+
 	err = services.DeleteAnswer(&answer, id)
 	if err != nil {
-		MessageNotFound(c, "answer not found")
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"success": true,
-			"message": "deleted successfully",
-		})
+		NotFoundError(c, fmt.Sprintf("Could not delete question ID: %v", id))
+		return
 	}
 
-}
-
-func MessageNotFound(c *gin.Context, msg string) {
-	c.JSON(http.StatusNotFound, gin.H{
-		"success": false,
-		"status":  "404",
-		"message": msg,
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "deleted successfully",
 	})
+
 }
