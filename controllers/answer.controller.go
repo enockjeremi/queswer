@@ -36,12 +36,12 @@ func PostAnswer(c *gin.Context) {
 
 	err := services.GetOneQuestion(&question, questionID)
 	if err != nil {
-		NotFoundError(c, "question not found")
+		ErrorHandling(c, http.StatusNotFound, "question not found")
 		return
 	} else {
 		err := services.CreateAnswer(&answer)
 		if err != nil {
-			NotFoundError(c, "Could not create answer")
+			ErrorHandling(c, http.StatusNotFound, "Could not create answer")
 			return
 		} else {
 			c.JSON(http.StatusCreated, answer)
@@ -55,7 +55,7 @@ func GetOneAnswer(c *gin.Context) {
 	id := c.Params.ByName("id")
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		NotFoundError(c, "answer not found")
+		ErrorHandling(c, http.StatusNotFound, "answer not found")
 		return
 	}
 	c.JSON(http.StatusOK, answer)
@@ -65,14 +65,14 @@ func PutAnswer(c *gin.Context) {
 	id := c.Params.ByName("id")
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		NotFoundError(c, "answer not found")
+		ErrorHandling(c, http.StatusNotFound, "answer not found")
 		return
 	}
 	c.BindJSON(&answer)
 
 	err = services.UpdateAnswer(&answer, id)
 	if err != nil {
-		NotFoundError(c, fmt.Sprintf("Could not update question ID: %v", id))
+		ErrorHandling(c, http.StatusNotFound, fmt.Sprintf("Could not update question ID: %v", id))
 		return
 	} else {
 		c.JSON(http.StatusOK, answer)
@@ -84,13 +84,13 @@ func DeleteAnswer(c *gin.Context) {
 	id := c.Params.ByName("id")
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		NotFoundError(c, "answer not found")
+		ErrorHandling(c, http.StatusNotFound, "answer not found")
 		return
 	}
 
 	err = services.DeleteAnswer(&answer, id)
 	if err != nil {
-		NotFoundError(c, fmt.Sprintf("Could not delete question ID: %v", id))
+		ErrorHandling(c, http.StatusNotFound, fmt.Sprintf("Could not delete question ID: %v", id))
 		return
 	}
 

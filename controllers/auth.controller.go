@@ -2,30 +2,74 @@ package controllers
 
 import (
 	"net/http"
+	"os"
+	"time"
 
+	"github.com/enockjeremi/queswer/config"
 	"github.com/enockjeremi/queswer/models"
 	"github.com/enockjeremi/queswer/services"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func GetAllUser(c *gin.Context) {}
+type SignInInput struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
 
-func RegisterUser(c *gin.Context) {
+func SignIn(c *gin.Context) {
+	var signIn SignInInput
+	var auth models.User
+
+	if err := c.ShouldBindBodyWithJSON(&signIn); err != nil {
+		ErrorHandling(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	config.DB.Where("username = ?", signIn.Username).Find(&auth)
+	if auth.ID == 0 {
+		ErrorHandling(c, http.StatusForbidden, "invalid user or password")
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(auth.Password), []byte(signIn.Password)); err != nil {
+		ErrorHandling(c, http.StatusForbidden, "invalid user or password")
+		return
+	}
+
+	generateToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id: ": auth.ID,
+		"exp":  time.Now().Add(time.Hour * 24).Unix(),
+	})
+
+	token, err := generateToken.SignedString([]byte(os.Getenv("jWT_SECRET")))
+	if err != nil {
+		ErrorHandling(c, http.StatusBadRequest, "failed to generate token")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"token":   token,
+	})
+
+}
+
+func SignUp(c *gin.Context) {
 	var auth models.User
 
 	if err := c.ShouldBindBodyWithJSON(&auth); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ErrorHandling(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := services.VerifyCredentials(&auth); err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "user or email already exists"})
+		ErrorHandling(c, http.StatusBadRequest, "user or email already exists")
 		return
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(auth.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ErrorHandling(c, http.StatusNotFound, err.Error())
 		return
 	}
 
@@ -37,14 +81,10 @@ func RegisterUser(c *gin.Context) {
 
 	err = services.CreateUser(&user)
 	if err != nil {
-		NotFoundError(c, "Could not register user")
+		ErrorHandling(c, 404, "Could not register user")
 		return
 	} else {
 		c.JSON(http.StatusCreated, user)
 	}
 
 }
-
-func GetOneUser(c *gin.Context) {}
-func PutUser(c *gin.Context)    {}
-func DeleteUser(c *gin.Context) {}

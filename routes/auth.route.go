@@ -7,10 +7,7 @@ import (
 
 func UserRoute(g *gin.RouterGroup) {
 	{
-		g.GET("user", controllers.GetAllUser)
-		g.POST("auth/sign-up", controllers.RegisterUser)
-		g.GET("user/:id", controllers.GetOneUser)
-		g.PUT("user/:id", controllers.PutUser)
-		g.DELETE("user/:id", controllers.DeleteUser)
+		g.POST("auth/sign-in", controllers.SignIn)
+		g.POST("auth/sign-up", controllers.SignUp)
 	}
 }

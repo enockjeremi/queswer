@@ -62,7 +62,7 @@ func PostQuestion(c *gin.Context) {
 	}
 	err := services.CreateQuestion(&question)
 	if err != nil {
-		NotFoundError(c, "Could not create answer")
+		ErrorHandling(c, http.StatusNotFound, "Could not create answer")
 		return
 	} else {
 		c.JSON(http.StatusCreated, question)
@@ -74,7 +74,7 @@ func GetOneQuestion(c *gin.Context) {
 	var question models.Question
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
-		NotFoundError(c, "question not found")
+		ErrorHandling(c, http.StatusNotFound, "question not found")
 
 	} else {
 		c.JSON(http.StatusOK, question)
@@ -85,13 +85,13 @@ func PutQuestion(c *gin.Context) {
 	id := c.Params.ByName("id")
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
-		NotFoundError(c, "question not found")
+		ErrorHandling(c, http.StatusNotFound, "question not found")
 
 	}
 	c.BindJSON(&question)
 	err = services.UpdateQuestion(&question, id)
 	if err != nil {
-		NotFoundError(c, fmt.Sprintf("Could not update question ID: %v", id))
+		ErrorHandling(c, http.StatusNotFound, fmt.Sprintf("Could not update question ID: %v", id))
 		return
 	} else {
 		c.JSON(http.StatusOK, question)
@@ -103,12 +103,12 @@ func DeleteQuestion(c *gin.Context) {
 	id := c.Params.ByName("id")
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
-		NotFoundError(c, "question not found")
+		ErrorHandling(c, http.StatusNotFound, "question not found")
 	}
 
 	err = services.DeleteQuestion(&question, id)
 	if err != nil {
-		NotFoundError(c, fmt.Sprintf("Could not delete question ID: %v", id))
+		ErrorHandling(c, http.StatusNotFound, fmt.Sprintf("Could not delete question ID: %v", id))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
