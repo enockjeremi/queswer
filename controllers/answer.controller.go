@@ -7,6 +7,7 @@ import (
 
 	"github.com/enockjeremi/queswer/models"
 	"github.com/enockjeremi/queswer/services"
+	"github.com/enockjeremi/queswer/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,12 +37,12 @@ func PostAnswer(c *gin.Context) {
 
 	err := services.GetOneQuestion(&question, questionID)
 	if err != nil {
-		ErrorHandling(c, http.StatusNotFound, "question not found")
+		utils.ErrorHandling(c, http.StatusNotFound, "question not found")
 		return
 	} else {
 		err := services.CreateAnswer(&answer)
 		if err != nil {
-			ErrorHandling(c, http.StatusNotFound, "Could not create answer")
+			utils.ErrorHandling(c, http.StatusNotFound, "Could not create answer")
 			return
 		} else {
 			c.JSON(http.StatusCreated, answer)
@@ -55,7 +56,7 @@ func GetOneAnswer(c *gin.Context) {
 	id := c.Params.ByName("id")
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		ErrorHandling(c, http.StatusNotFound, "answer not found")
+		utils.ErrorHandling(c, http.StatusNotFound, "answer not found")
 		return
 	}
 	c.JSON(http.StatusOK, answer)
@@ -65,14 +66,14 @@ func PutAnswer(c *gin.Context) {
 	id := c.Params.ByName("id")
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		ErrorHandling(c, http.StatusNotFound, "answer not found")
+		utils.ErrorHandling(c, http.StatusNotFound, "answer not found")
 		return
 	}
 	c.BindJSON(&answer)
 
 	err = services.UpdateAnswer(&answer, id)
 	if err != nil {
-		ErrorHandling(c, http.StatusNotFound, fmt.Sprintf("Could not update question ID: %v", id))
+		utils.ErrorHandling(c, http.StatusNotFound, fmt.Sprintf("Could not update question ID: %v", id))
 		return
 	} else {
 		c.JSON(http.StatusOK, answer)
@@ -84,13 +85,13 @@ func DeleteAnswer(c *gin.Context) {
 	id := c.Params.ByName("id")
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		ErrorHandling(c, http.StatusNotFound, "answer not found")
+		utils.ErrorHandling(c, http.StatusNotFound, "answer not found")
 		return
 	}
 
 	err = services.DeleteAnswer(&answer, id)
 	if err != nil {
-		ErrorHandling(c, http.StatusNotFound, fmt.Sprintf("Could not delete question ID: %v", id))
+		utils.ErrorHandling(c, http.StatusNotFound, fmt.Sprintf("Could not delete question ID: %v", id))
 		return
 	}
 

@@ -22,3 +22,19 @@ func VerifyCredentials(user *models.User) (err error) {
 	}
 	return nil
 }
+
+func GetUser(user *models.User, id string) (err error) {
+	if err = config.DB.Where("id = ?", id).First(user).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func VerifyUsername(user *models.User, userInput string) (err error) {
+	err = config.DB.Where("username = ?", userInput).Find(&user).First(&user).Error
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
