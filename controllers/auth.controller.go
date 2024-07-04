@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -73,10 +74,19 @@ func SignUp(c *gin.Context) {
 		return
 	}
 
+	profile := auth.Profile
+	err = services.CreateProfile(&profile)
+	if err != nil {
+		utils.ErrorHandling(c, 404, "Could not register user")
+		return
+	}
+
 	user := models.User{
-		Username: auth.Username,
-		Email:    auth.Email,
-		Password: string(passwordHash),
+		Username:  auth.Username,
+		Email:     auth.Email,
+		Password:  string(passwordHash),
+		ProfileID: profile.ID,
+		Profile:   profile,
 	}
 
 	err = services.CreateUser(&user)
@@ -86,6 +96,37 @@ func SignUp(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusCreated, user)
 	}
+
+}
+
+func UpdateProfile(c *gin.Context) {
+	var profile models.Profile
+	var user models.User
+	profileId, _ := c.Get("profileID")
+
+	err := services.GetProfile(&profile, profileId)
+	if err != nil {
+		utils.ErrorHandling(c, http.StatusNotFound, "profile not found")
+		return
+	}
+
+	if err = c.ShouldBindBodyWithJSON(&profile); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = services.UpdateProfile(&profile)
+	if err != nil {
+		utils.ErrorHandling(c, http.StatusNotFound, fmt.Sprintf("Could not update user profile ID: %v", profileId))
+		return
+	}
+
+	err = services.GetUser(&user, profile.UserID)
+	if err != nil {
+		utils.ErrorHandling(c, http.StatusNotFound, "profile not found")
+		return
+	}
+	c.JSON(http.StatusOK, user)
 
 }
 

@@ -26,7 +26,7 @@ func FindOneAnswer(answer *models.Answer, id string) (err error) {
 	return nil
 }
 
-func UpdateAnswer(answer *models.Answer, id string) (err error) {
+func UpdateAnswer(answer *models.Answer) (err error) {
 	config.DB.Save(answer)
 	return nil
 }

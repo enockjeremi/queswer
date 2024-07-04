@@ -54,11 +54,11 @@ func CheckAuth(c *gin.Context) {
 	var user models.User
 	err = services.GetUser(&user, fmt.Sprintf("%v", (claims["id"])))
 	if err != nil {
-		utils.ErrorHandling(c, http.StatusUnauthorized, "invalid token")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
+	c.Set("profileID", user.ProfileID)
 	c.Set("currentUser", user)
 	c.Next()
 }

@@ -11,5 +11,6 @@ func UserRoute(g *gin.RouterGroup) {
 		g.POST("auth/sign-in", controllers.SignIn)
 		g.POST("auth/sign-up", controllers.SignUp)
 		g.GET("auth/profile", middlewares.CheckAuth, controllers.GetProfile)
+		g.PUT("auth/update-profile", middlewares.CheckAuth, controllers.UpdateProfile)
 	}
 }

@@ -71,7 +71,7 @@ func PutAnswer(c *gin.Context) {
 	}
 	c.BindJSON(&answer)
 
-	err = services.UpdateAnswer(&answer, id)
+	err = services.UpdateAnswer(&answer)
 	if err != nil {
 		utils.ErrorHandling(c, http.StatusNotFound, fmt.Sprintf("Could not update question ID: %v", id))
 		return

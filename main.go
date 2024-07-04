@@ -28,6 +28,7 @@ func main() {
 		&models.Question{},
 		&models.Answer{},
 		&models.User{},
+		&models.Profile{},
 	)
 
 	r := routes.SetupRoute()

@@ -23,8 +23,8 @@ func VerifyCredentials(user *models.User) (err error) {
 	return nil
 }
 
-func GetUser(user *models.User, id string) (err error) {
-	if err = config.DB.Where("id = ?", id).First(user).Error; err != nil {
+func GetUser(user *models.User, id interface{}) (err error) {
+	if err = config.DB.Where("id = ?", id).Preload("Profile").First(user).Error; err != nil {
 		return err
 	}
 	return nil
@@ -37,4 +37,23 @@ func VerifyUsername(user *models.User, userInput string) (err error) {
 	}
 	return nil
 
+}
+
+func CreateProfile(profile *models.Profile) (err error) {
+	if err := config.DB.Create(&profile).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateProfile(profile *models.Profile) (err error) {
+	config.DB.Save(profile)
+	return nil
+}
+
+func GetProfile(profile *models.Profile, id interface{}) (err error) {
+	if err = config.DB.Where("id = ?", id).First(profile).Error; err != nil {
+		return err
+	}
+	return nil
 }
