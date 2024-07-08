@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/enockjeremi/queswer/config"
+	"github.com/enockjeremi/queswer/formatter"
 	"github.com/enockjeremi/queswer/models"
 	"github.com/enockjeremi/queswer/routes"
 	"github.com/joho/godotenv"
@@ -32,6 +33,6 @@ func main() {
 	)
 
 	r := routes.SetupRoute()
-
+	formatter.NewErrorFormatter().LengFormatter("es")
 	r.Run(":1341")
 }
