@@ -6,11 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func UserRoute(g *gin.RouterGroup) {
+func AuthRouter(g *gin.RouterGroup) {
 	{
 		g.POST("auth/sign-in", controllers.SignIn)
 		g.POST("auth/sign-up", controllers.SignUp)
 		g.GET("auth/profile", middlewares.CheckAuth, controllers.GetProfile)
 		g.PUT("auth/update-profile", middlewares.CheckAuth, controllers.UpdateProfile)
+		g.PATCH("auth/change-password", middlewares.CheckAuth, controllers.ChangePassword)
 	}
 }

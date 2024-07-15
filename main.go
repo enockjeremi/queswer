@@ -33,6 +33,7 @@ func main() {
 	)
 
 	r := routes.SetupRoute()
-	formatter.NewErrorFormatter().LengFormatter("es")
+
+	formatter.NewErrorFormatter().LengFormatter("en")
 	r.Run(":1341")
 }

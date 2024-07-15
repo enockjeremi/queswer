@@ -19,6 +19,11 @@ type AuthInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type PasswordInput struct {
+	OldPassword string `json:"oldPassword" binding:"required"`
+	NewPassword string `json:"newPassword" binding:"required,min=7"`
+}
+
 func SignIn(c *gin.Context) {
 	var signIn AuthInput
 	var user models.User
@@ -123,7 +128,8 @@ func SignUp(c *gin.Context) {
 func UpdateProfile(c *gin.Context) {
 	var profile models.Profile
 	var user models.User
-	profileId, _ := c.Get("profileID")
+	currentUser, _ := c.Get("currentUser")
+	profileId := currentUser.(models.User).ProfileID
 
 	err := services.GetProfile(&profile, profileId)
 	if err != nil {
@@ -157,6 +163,59 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, user)
+
+}
+
+func ChangePassword(c *gin.Context) {
+	var passwordInput PasswordInput
+	var user models.User
+	currentUser, _ := c.Get("currentUser")
+	id := currentUser.(models.User).ID
+
+	if err := c.ShouldBindBodyWithJSON(&passwordInput); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": formatter.NewErrorFormatter().Formatter(err)})
+		return
+	}
+
+	err := services.GetUser(&user, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error":   "user not found",
+		})
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(passwordInput.OldPassword)); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   "old password not found",
+		})
+		return
+	}
+
+	newPasswordHash, err := bcrypt.GenerateFromPassword([]byte(passwordInput.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	err = services.ChangePassword(&user, string(newPasswordHash))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error":   "could not change password",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"messages": "successful password change",
+		"success":  true,
+	})
 
 }
 

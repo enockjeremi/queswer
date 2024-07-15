@@ -51,6 +51,11 @@ func UpdateProfile(profile *models.Profile) (err error) {
 	return nil
 }
 
+func ChangePassword(user *models.User, newPassword string) (err error) {
+	config.DB.Model(&user).Update("Password", newPassword)
+	return nil
+}
+
 func GetProfile(profile *models.Profile, id interface{}) (err error) {
 	if err = config.DB.Where("id = ?", id).First(profile).Error; err != nil {
 		return err
