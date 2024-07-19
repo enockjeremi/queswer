@@ -6,7 +6,7 @@ import (
 )
 
 func FindAllQuestion(question *[]models.Question) (err error) {
-	if err = config.DB.Model(&question).Preload("Answer").Find(&question).Error; err != nil {
+	if err = config.DB.Model(&question).Preload("Answer").Preload("User").Find(&question).Error; err != nil {
 		return err
 	}
 	return nil

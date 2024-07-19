@@ -6,6 +6,8 @@ type Answer struct {
 	Model
 	Content    string `json:"content" binding:"required"`
 	QuestionID uint   `json:"questionId" binding:"required"`
+	UserID     uint   `json:"-"`
+	User       User   `json:"user" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 func (a *Answer) TableName() string {

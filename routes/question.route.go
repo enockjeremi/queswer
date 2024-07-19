@@ -2,15 +2,16 @@ package routes
 
 import (
 	"github.com/enockjeremi/queswer/controllers"
+	"github.com/enockjeremi/queswer/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
 func QuestionRouter(g *gin.RouterGroup) {
 	{
 		g.GET("question", controllers.GetAllQuestion)
-		g.POST("question", controllers.PostQuestion)
 		g.GET("question/:id", controllers.GetOneQuestion)
-		g.PUT("question/:id", controllers.PutQuestion)
-		g.DELETE("question/:id", controllers.DeleteQuestion)
+		g.POST("question", middlewares.CheckAuth, controllers.PostQuestion)
+		g.PUT("question/:id", middlewares.CheckAuth, controllers.PutQuestion)
+		g.DELETE("question/:id", middlewares.CheckAuth, controllers.DeleteQuestion)
 	}
 }

@@ -22,7 +22,11 @@ func GetAllQuestion(c *gin.Context) {
 
 func PostQuestion(c *gin.Context) {
 	var question models.Question
+	currentUser, _ := c.Get("currentUser")
+	user := currentUser.(models.User)
+
 	question.Answer = make([]models.Answer, 0)
+	question.User = user
 
 	if err := c.ShouldBindBodyWithJSON(&question); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": formatter.NewErrorFormatter().Formatter(err)})
@@ -57,11 +61,23 @@ func GetOneQuestion(c *gin.Context) {
 func PutQuestion(c *gin.Context) {
 	var question models.Question
 	id := c.Params.ByName("id")
+
+	currentUser, _ := c.Get("currentUser")
+	userID := currentUser.(models.User).ID
+
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"success": false,
 			"error":   "question not found",
+		})
+		return
+	}
+
+	if question.UserID != userID {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error":   "this question could not be updated",
 		})
 		return
 	}
@@ -79,9 +95,14 @@ func PutQuestion(c *gin.Context) {
 	}
 
 }
+
 func DeleteQuestion(c *gin.Context) {
 	var question models.Question
 	id := c.Params.ByName("id")
+
+	currentUser, _ := c.Get("currentUser")
+	userID := currentUser.(models.User).ID
+
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -91,11 +112,19 @@ func DeleteQuestion(c *gin.Context) {
 		return
 	}
 
+	if question.UserID != userID {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error":   "this question could not be deleted",
+		})
+		return
+	}
+
 	err = services.DeleteQuestion(&question, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"success": false,
-			"error":   fmt.Sprintf("Could not delete question ID: %v", id),
+			"error":   fmt.Sprintf("could not delete question ID: %v", id),
 		})
 		return
 	}
