@@ -20,7 +20,7 @@ func CreateQuestion(question *models.Question) (err error) {
 }
 
 func GetOneQuestion(question *models.Question, id string) (err error) {
-	if err = config.DB.Where("id = ?", id).Preload("Answer").First(question).Error; err != nil {
+	if err = config.DB.Where("id = ?", id).Preload("Answer").Preload("User").First(&question).Error; err != nil {
 		return err
 	}
 	return nil

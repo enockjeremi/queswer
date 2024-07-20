@@ -8,7 +8,7 @@ type Question struct {
 	Description string   `json:"description" binding:"required"`
 	Completed   bool     `json:"completed"`
 	Answer      []Answer `json:"answers" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-	UserID      uint     `json:"userid"`
+	UserID      uint     `json:"-"`
 	User        User     `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
@@ -17,27 +17,25 @@ func (q *Question) TableName() string {
 }
 
 func (q *Question) MarshalJSON() ([]byte, error) {
-	type UserJSON struct {
+	type CreatedByJSON struct {
 		ID       uint   `json:"id"`
 		Username string `json:"username"`
 	}
 
 	return json.Marshal(struct {
-		ID          uint     `json:"id"`
-		Title       string   `json:"title"`
-		Description string   `json:"description"`
-		Completed   bool     `json:"completed"`
-		User        UserJSON `json:"user"`
-		Answer      []Answer `json:"answers"`
-		UserID      uint     `json:"-"`
+		ID          uint          `json:"id"`
+		Title       string        `json:"title"`
+		Description string        `json:"description"`
+		Completed   bool          `json:"completed"`
+		CreatedBy   CreatedByJSON `json:"createdBy"`
+		Answer      []Answer      `json:"answers"`
 	}{
 		ID:          q.ID,
 		Title:       q.Title,
 		Description: q.Description,
 		Completed:   q.Completed,
 		Answer:      q.Answer,
-		UserID:      q.UserID,
-		User: UserJSON{
+		CreatedBy: CreatedByJSON{
 			ID:       q.User.ID,
 			Username: q.User.Username,
 		},

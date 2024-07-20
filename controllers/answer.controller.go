@@ -22,13 +22,17 @@ func GetAllAnswer(c *gin.Context) {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
-	c.JSON(http.StatusOK, answers)
+	c.JSON(http.StatusOK, &answers)
 }
 
 func PostAnswer(c *gin.Context) {
+	currentUser, _ := c.Get("currentUser")
+	user := currentUser.(models.User)
+
 	var answer models.Answer
 	var question models.Question
 
+	answer.User = user
 	if err := c.ShouldBindBodyWithJSON(&answer); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": formatter.NewErrorFormatter().Formatter(err)})
 		return
@@ -51,7 +55,7 @@ func PostAnswer(c *gin.Context) {
 			})
 			return
 		} else {
-			c.JSON(http.StatusCreated, answer)
+			c.JSON(http.StatusCreated, &answer)
 		}
 	}
 
@@ -68,7 +72,7 @@ func GetOneAnswer(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, answer)
+	c.JSON(http.StatusOK, &answer)
 }
 func PutAnswer(c *gin.Context) {
 	var answer models.Answer
@@ -91,7 +95,7 @@ func PutAnswer(c *gin.Context) {
 		})
 		return
 	} else {
-		c.JSON(http.StatusOK, answer)
+		c.JSON(http.StatusOK, &answer)
 	}
 }
 

@@ -40,7 +40,7 @@ func PostQuestion(c *gin.Context) {
 		})
 		return
 	} else {
-		c.JSON(http.StatusCreated, question)
+		c.JSON(http.StatusCreated, &question)
 	}
 }
 
@@ -55,7 +55,7 @@ func GetOneQuestion(c *gin.Context) {
 		})
 		return
 	} else {
-		c.JSON(http.StatusOK, question)
+		c.JSON(http.StatusOK, &question)
 	}
 }
 func PutQuestion(c *gin.Context) {
@@ -91,7 +91,7 @@ func PutQuestion(c *gin.Context) {
 		})
 		return
 	} else {
-		c.JSON(http.StatusOK, question)
+		c.JSON(http.StatusOK, &question)
 	}
 
 }
