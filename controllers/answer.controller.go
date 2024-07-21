@@ -77,6 +77,10 @@ func GetOneAnswer(c *gin.Context) {
 func PutAnswer(c *gin.Context) {
 	var answer models.Answer
 	id := c.Params.ByName("id")
+
+	currentUser, _ := c.Get("currentUser")
+	userID := currentUser.(models.User).ID
+
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -86,6 +90,14 @@ func PutAnswer(c *gin.Context) {
 		return
 	}
 	c.BindJSON(&answer)
+
+	if answer.UserID != userID {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error":   "this answer could not be updated",
+		})
+		return
+	}
 
 	err = services.UpdateAnswer(&answer)
 	if err != nil {
@@ -102,11 +114,23 @@ func PutAnswer(c *gin.Context) {
 func DeleteAnswer(c *gin.Context) {
 	var answer models.Answer
 	id := c.Params.ByName("id")
+
+	currentUser, _ := c.Get("currentUser")
+	userID := currentUser.(models.User).ID
+
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"success": false,
 			"error":   "answer not found",
+		})
+		return
+	}
+
+	if answer.UserID != userID {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"error":   "this answer could not be deleted",
 		})
 		return
 	}

@@ -22,6 +22,27 @@ func (q *Question) MarshalJSON() ([]byte, error) {
 		Username string `json:"username"`
 	}
 
+	if q.Answer == nil {
+		return json.Marshal(struct {
+			ID          uint          `json:"id"`
+			Title       string        `json:"title"`
+			Description string        `json:"description"`
+			Completed   bool          `json:"completed"`
+			CreatedBy   CreatedByJSON `json:"createdBy"`
+			Answer      []Answer      `json:"-"`
+		}{
+			ID:          q.ID,
+			Title:       q.Title,
+			Description: q.Description,
+			Completed:   q.Completed,
+			Answer:      q.Answer,
+			CreatedBy: CreatedByJSON{
+				ID:       q.User.ID,
+				Username: q.User.Username,
+			},
+		})
+	}
+
 	return json.Marshal(struct {
 		ID          uint          `json:"id"`
 		Title       string        `json:"title"`

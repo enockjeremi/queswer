@@ -13,7 +13,7 @@ func FindAllAnswer(answer *[]models.Answer) (err error) {
 }
 
 func CreateAnswer(answer *models.Answer) (err error) {
-	if err := config.DB.Create(&answer).Error; err != nil {
+	if err := config.DB.Model(&answer).Create(&answer).Error; err != nil {
 		return err
 	}
 	return nil
@@ -27,11 +27,11 @@ func FindOneAnswer(answer *models.Answer, id string) (err error) {
 }
 
 func UpdateAnswer(answer *models.Answer) (err error) {
-	config.DB.Save(answer)
+	config.DB.Model(&answer).Save(answer)
 	return nil
 }
 
 func DeleteAnswer(answer *models.Answer, id string) (err error) {
-	config.DB.Where("id = ?", id).Delete(answer)
+	config.DB.Model(&answer).Where("id = ?", id).Delete(answer)
 	return
 }

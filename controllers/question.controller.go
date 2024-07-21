@@ -10,14 +10,28 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Response struct {
+	Success bool `json:"success"`
+	Data    any  `json:"data"`
+}
+
+type ErrorResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Error   any    `json:"error"`
+}
+
 func GetAllQuestion(c *gin.Context) {
-	var question []models.Question
+	question := make([]models.Question, 0)
 	if err := services.FindAllQuestion(&question); err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 
-	c.JSON(http.StatusOK, &question)
+	c.JSON(http.StatusOK, Response{
+		Success: true,
+		Data:    &question,
+	})
 }
 
 func PostQuestion(c *gin.Context) {
@@ -29,18 +43,27 @@ func PostQuestion(c *gin.Context) {
 	question.User = user
 
 	if err := c.ShouldBindBodyWithJSON(&question); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": formatter.NewErrorFormatter().Formatter(err)})
+		c.JSON(http.StatusBadRequest, ErrorResponse{
+			Success: false,
+			Error:   formatter.NewErrorFormatter().Formatter(err),
+			Message: "could not create question",
+		})
 		return
 	}
+
 	err := services.CreateQuestion(&question)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "could not create question",
+		c.JSON(http.StatusNotFound, ErrorResponse{
+			Success: false,
+			Error:   "could not create question",
+			Message: "something wrong, the element could not be created",
 		})
 		return
 	} else {
-		c.JSON(http.StatusCreated, &question)
+		c.JSON(http.StatusCreated, Response{
+			Success: true,
+			Data:    &question,
+		})
 	}
 }
 
@@ -55,7 +78,10 @@ func GetOneQuestion(c *gin.Context) {
 		})
 		return
 	} else {
-		c.JSON(http.StatusOK, &question)
+		c.JSON(http.StatusOK, Response{
+			Success: true,
+			Data:    &question,
+		})
 	}
 }
 func PutQuestion(c *gin.Context) {
@@ -91,7 +117,10 @@ func PutQuestion(c *gin.Context) {
 		})
 		return
 	} else {
-		c.JSON(http.StatusOK, &question)
+		c.JSON(http.StatusOK, Response{
+			Success: true,
+			Data:    &question,
+		})
 	}
 
 }

@@ -36,7 +36,7 @@ func CheckAuth(c *gin.Context) {
 	if err != nil || !token.Valid {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"success": false,
-			"error":   "invalid expired token",
+			"error":   "token expired",
 		})
 
 		c.AbortWithStatus(http.StatusUnauthorized)
