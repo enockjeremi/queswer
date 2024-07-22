@@ -26,7 +26,7 @@ func GetOneQuestion(question *models.Question, id string) (err error) {
 	return nil
 }
 
-func UpdateQuestion(question *models.Question, id string) (err error) {
+func UpdateQuestion(question *models.Question) (err error) {
 	config.DB.Model(&question).Save(question)
 	return nil
 }

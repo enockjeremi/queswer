@@ -1,13 +1,12 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/enockjeremi/queswer/formatter"
 	"github.com/enockjeremi/queswer/models"
 	"github.com/enockjeremi/queswer/services"
+	"github.com/enockjeremi/queswer/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,7 +21,10 @@ func GetAllAnswer(c *gin.Context) {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
-	c.JSON(http.StatusOK, &answers)
+	c.JSON(http.StatusOK, Response{
+		Success: true,
+		Data:    &answers,
+	})
 }
 
 func PostAnswer(c *gin.Context) {
@@ -34,28 +36,25 @@ func PostAnswer(c *gin.Context) {
 
 	answer.User = user
 	if err := c.ShouldBindBodyWithJSON(&answer); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": formatter.NewErrorFormatter().Formatter(err)})
+		utils.BadRequestResponse(c, err)
 		return
 	}
 	questionID := toString(answer.QuestionID)
 
 	err := services.GetOneQuestion(&question, questionID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "question not found",
-		})
+		utils.NotFoundResponse(c, "question")
 		return
 	} else {
 		err := services.CreateAnswer(&answer)
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"success": false,
-				"error":   "Could not create answer",
-			})
+			utils.BadRequestResponse(c, err)
 			return
 		} else {
-			c.JSON(http.StatusCreated, &answer)
+			c.JSON(http.StatusCreated, Response{
+				Success: true,
+				Data:    &answer,
+			})
 		}
 	}
 
@@ -66,14 +65,15 @@ func GetOneAnswer(c *gin.Context) {
 	id := c.Params.ByName("id")
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "answer not found",
-		})
+		utils.NotFoundResponse(c, "answer")
 		return
 	}
-	c.JSON(http.StatusOK, &answer)
+	c.JSON(http.StatusOK, Response{
+		Success: true,
+		Data:    &answer,
+	})
 }
+
 func PutAnswer(c *gin.Context) {
 	var answer models.Answer
 	id := c.Params.ByName("id")
@@ -83,31 +83,25 @@ func PutAnswer(c *gin.Context) {
 
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "answer not found",
-		})
+		utils.NotFoundResponse(c, "answer")
 		return
 	}
 	c.BindJSON(&answer)
 
 	if answer.UserID != userID {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "this answer could not be updated",
-		})
+		utils.ForbiddenResponse(c)
 		return
 	}
 
 	err = services.UpdateAnswer(&answer)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   fmt.Sprintf("Could not update answer ID: %v", id),
-		})
+		utils.NotFoundResponse(c, "update")
 		return
 	} else {
-		c.JSON(http.StatusOK, &answer)
+		c.JSON(http.StatusOK, Response{
+			Success: true,
+			Data:    &answer,
+		})
 	}
 }
 
@@ -120,33 +114,24 @@ func DeleteAnswer(c *gin.Context) {
 
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "answer not found",
-		})
+		utils.NotFoundResponse(c, "answer")
 		return
 	}
 
 	if answer.UserID != userID {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "this answer could not be deleted",
-		})
+		utils.ForbiddenResponse(c)
 		return
 	}
 
 	err = services.DeleteAnswer(&answer, id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   fmt.Sprintf("Could not delete answer ID: %v", id),
-		})
+		utils.NotFoundResponse(c, "delete")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "deleted successfully",
+	c.JSON(http.StatusOK, Response{
+		Success: true,
+		Data:    &answer,
 	})
 
 }

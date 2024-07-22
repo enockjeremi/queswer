@@ -1,24 +1,17 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/enockjeremi/queswer/formatter"
 	"github.com/enockjeremi/queswer/models"
 	"github.com/enockjeremi/queswer/services"
+	"github.com/enockjeremi/queswer/utils"
 	"github.com/gin-gonic/gin"
 )
 
 type Response struct {
 	Success bool `json:"success"`
 	Data    any  `json:"data"`
-}
-
-type ErrorResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-	Error   any    `json:"error"`
 }
 
 func GetAllQuestion(c *gin.Context) {
@@ -43,21 +36,13 @@ func PostQuestion(c *gin.Context) {
 	question.User = user
 
 	if err := c.ShouldBindBodyWithJSON(&question); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Success: false,
-			Error:   formatter.NewErrorFormatter().Formatter(err),
-			Message: "could not create question",
-		})
+		utils.BadRequestResponse(c, err)
 		return
 	}
 
 	err := services.CreateQuestion(&question)
 	if err != nil {
-		c.JSON(http.StatusNotFound, ErrorResponse{
-			Success: false,
-			Error:   "could not create question",
-			Message: "something wrong, the element could not be created",
-		})
+		utils.BadRequestResponse(c, err)
 		return
 	} else {
 		c.JSON(http.StatusCreated, Response{
@@ -70,12 +55,10 @@ func PostQuestion(c *gin.Context) {
 func GetOneQuestion(c *gin.Context) {
 	id := c.Params.ByName("id")
 	var question models.Question
+
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "question not found",
-		})
+		utils.NotFoundResponse(c, "question")
 		return
 	} else {
 		c.JSON(http.StatusOK, Response{
@@ -93,28 +76,19 @@ func PutQuestion(c *gin.Context) {
 
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "question not found",
-		})
+		utils.NotFoundResponse(c, "question")
 		return
 	}
 
 	if question.UserID != userID {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "this question could not be updated",
-		})
+		utils.ForbiddenResponse(c)
 		return
 	}
 	c.BindJSON(&question)
 
-	err = services.UpdateQuestion(&question, id)
+	err = services.UpdateQuestion(&question)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   fmt.Sprintf("Could not update question ID: %v", id),
-		})
+		utils.NotFoundResponse(c, "update")
 		return
 	} else {
 		c.JSON(http.StatusOK, Response{
@@ -134,32 +108,23 @@ func DeleteQuestion(c *gin.Context) {
 
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "question not found",
-		})
+		utils.NotFoundResponse(c, "question")
 		return
 	}
 
 	if question.UserID != userID {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "this question could not be deleted",
-		})
+		utils.ForbiddenResponse(c)
 		return
 	}
 
 	err = services.DeleteQuestion(&question, id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   fmt.Sprintf("could not delete question ID: %v", id),
-		})
+		utils.NotFoundResponse(c, "delete")
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"messages": "deleted successfully",
-		"success":  true,
+	c.JSON(http.StatusOK, Response{
+		Success: true,
+		Data:    &question,
 	})
 
 }
