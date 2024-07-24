@@ -58,7 +58,7 @@ func GetOneQuestion(c *gin.Context) {
 
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
-		utils.NotFoundResponse(c, "question")
+		utils.NotFoundResponse(c, "question not found")
 		return
 	} else {
 		c.JSON(http.StatusOK, Response{
@@ -76,19 +76,19 @@ func PutQuestion(c *gin.Context) {
 
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
-		utils.NotFoundResponse(c, "question")
+		utils.NotFoundResponse(c, "question not found")
 		return
 	}
 
 	if question.UserID != userID {
-		utils.ForbiddenResponse(c)
+		utils.ForbiddenResponse(c, "operation not allowed")
 		return
 	}
 	c.BindJSON(&question)
 
 	err = services.UpdateQuestion(&question)
 	if err != nil {
-		utils.NotFoundResponse(c, "update")
+		utils.NotFoundResponse(c, "could not update")
 		return
 	} else {
 		c.JSON(http.StatusOK, Response{
@@ -108,18 +108,18 @@ func DeleteQuestion(c *gin.Context) {
 
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
-		utils.NotFoundResponse(c, "question")
+		utils.NotFoundResponse(c, "question not found")
 		return
 	}
 
 	if question.UserID != userID {
-		utils.ForbiddenResponse(c)
+		utils.ForbiddenResponse(c, "operation not allowed")
 		return
 	}
 
 	err = services.DeleteQuestion(&question, id)
 	if err != nil {
-		utils.NotFoundResponse(c, "delete")
+		utils.NotFoundResponse(c, "could not delete")
 		return
 	}
 	c.JSON(http.StatusOK, Response{

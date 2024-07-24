@@ -9,6 +9,7 @@ import (
 
 	"github.com/enockjeremi/queswer/models"
 	"github.com/enockjeremi/queswer/services"
+	"github.com/enockjeremi/queswer/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -17,10 +18,7 @@ func CheckAuth(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 
 	if authHeader == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error":   "authorization header is missing",
-		})
+		utils.UnauthorizedResponse(c, "authorization header is missing")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -34,30 +32,20 @@ func CheckAuth(c *gin.Context) {
 		return []byte(os.Getenv("jWT_SECRET")), nil
 	})
 	if err != nil || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error":   "token expired",
-		})
-
+		utils.UnauthorizedResponse(c, "invalid or expired token")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error":   "invalid token",
-		})
-		c.Abort()
+		utils.UnauthorizedResponse(c, "invalid token")
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	if float64(time.Now().Unix()) > claims["exp"].(float64) {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error":   "token expired",
-		})
+		utils.UnauthorizedResponse(c, "token expired")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}

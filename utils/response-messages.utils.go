@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/enockjeremi/queswer/formatter"
@@ -13,7 +12,7 @@ type ErrorResponse struct {
 	Error   any  `json:"error"`
 }
 
-func NotFoundResponse(c *gin.Context, field string) {
+func NotFoundResponse(c *gin.Context, message string) {
 	c.JSON(http.StatusNotFound, ErrorResponse{
 		Success: false,
 		Error: struct {
@@ -21,7 +20,7 @@ func NotFoundResponse(c *gin.Context, field string) {
 			Message string `json:"message"`
 		}{
 			Code:    404,
-			Message: fmt.Sprintf("%v not found", field),
+			Message: message,
 		},
 	})
 }
@@ -39,7 +38,7 @@ func BadRequestResponse(c *gin.Context, err error) {
 	})
 }
 
-func ForbiddenResponse(c *gin.Context) {
+func ForbiddenResponse(c *gin.Context, message string) {
 	c.JSON(http.StatusForbidden, ErrorResponse{
 		Success: false,
 		Error: struct {
@@ -47,7 +46,20 @@ func ForbiddenResponse(c *gin.Context) {
 			Message string `json:"message"`
 		}{
 			Code:    403,
-			Message: "operation not allowed",
+			Message: message,
+		},
+	})
+}
+
+func UnauthorizedResponse(c *gin.Context, message string) {
+	c.JSON(http.StatusUnauthorized, ErrorResponse{
+		Success: false,
+		Error: struct {
+			Code    int    `json:"code"`
+			Message string `json:"message"`
+		}{
+			Code:    401,
+			Message: message,
 		},
 	})
 }
