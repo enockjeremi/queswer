@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/enockjeremi/queswer/libs"
 	"github.com/enockjeremi/queswer/models"
 	"github.com/enockjeremi/queswer/services"
-	"github.com/enockjeremi/queswer/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -29,18 +29,18 @@ func SignIn(c *gin.Context) {
 	var user models.User
 
 	if err := c.ShouldBindBodyWithJSON(&signIn); err != nil {
-		utils.BadRequestResponse(c, err)
+		libs.BadRequestResponse(c, err)
 		return
 	}
 
 	err := services.VerifyUsername(&user, signIn.Username)
 	if err != nil {
-		utils.ForbiddenResponse(c, "invalid username")
+		libs.ForbiddenResponse(c, "invalid username")
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(signIn.Password)); err != nil {
-		utils.ForbiddenResponse(c, "invalid password")
+		libs.ForbiddenResponse(c, "invalid password")
 		return
 	}
 
@@ -51,7 +51,7 @@ func SignIn(c *gin.Context) {
 
 	token, err := generateToken.SignedString([]byte(os.Getenv("jWT_SECRET")))
 	if err != nil {
-		utils.NotFoundResponse(c, "failed to generate token")
+		libs.NotFoundResponse(c, "failed to generate token")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -65,24 +65,24 @@ func SignUp(c *gin.Context) {
 	var auth models.User
 
 	if err := c.ShouldBindBodyWithJSON(&auth); err != nil {
-		utils.BadRequestResponse(c, err)
+		libs.BadRequestResponse(c, err)
 		return
 	}
 	if err := services.VerifyCredentials(&auth); err == nil {
-		utils.NotFoundResponse(c, "user or email already exists")
+		libs.NotFoundResponse(c, "user or email already exists")
 		return
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(auth.Password), bcrypt.DefaultCost)
 	if err != nil {
-		utils.NotFoundResponse(c, err.Error())
+		libs.NotFoundResponse(c, err.Error())
 		return
 	}
 
 	profile := auth.Profile
 	err = services.CreateProfile(&profile)
 	if err != nil {
-		utils.NotFoundResponse(c, "could not register user")
+		libs.NotFoundResponse(c, "something wrong! could not register user")
 		return
 	}
 
@@ -96,7 +96,7 @@ func SignUp(c *gin.Context) {
 
 	err = services.CreateUser(&user)
 	if err != nil {
-		utils.NotFoundResponse(c, "could not register user")
+		libs.NotFoundResponse(c, "something wrong! could not register user")
 		return
 	} else {
 		c.JSON(http.StatusCreated, user)
@@ -112,24 +112,24 @@ func UpdateProfile(c *gin.Context) {
 
 	err := services.GetProfile(&profile, profileId)
 	if err != nil {
-		utils.NotFoundResponse(c, "profile not found")
+		libs.NotFoundResponse(c, "profile not found")
 		return
 	}
 
 	if err = c.ShouldBindBodyWithJSON(&profile); err != nil {
-		utils.BadRequestResponse(c, err)
+		libs.BadRequestResponse(c, err)
 		return
 	}
 
 	err = services.UpdateProfile(&profile)
 	if err != nil {
-		utils.NotFoundResponse(c, fmt.Sprintf("Could not update user profile ID: %v", profileId))
+		libs.NotFoundResponse(c, fmt.Sprintf("Could not update user profile ID: %v", profileId))
 		return
 	}
 
 	err = services.GetUser(&user, profile.UserID)
 	if err != nil {
-		utils.NotFoundResponse(c, "profile not found")
+		libs.NotFoundResponse(c, "profile not found")
 		return
 	}
 	c.JSON(http.StatusOK, user)
@@ -143,30 +143,30 @@ func ChangePassword(c *gin.Context) {
 	id := currentUser.(models.User).ID
 
 	if err := c.ShouldBindBodyWithJSON(&passwordInput); err != nil {
-		utils.BadRequestResponse(c, err)
+		libs.BadRequestResponse(c, err)
 		return
 	}
 
 	err := services.GetUser(&user, id)
 	if err != nil {
-		utils.NotFoundResponse(c, "user not found")
+		libs.NotFoundResponse(c, "user not found")
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(passwordInput.OldPassword)); err != nil {
-		utils.NotFoundResponse(c, "old password not found")
+		libs.NotFoundResponse(c, "old password not found")
 		return
 	}
 
 	newPasswordHash, err := bcrypt.GenerateFromPassword([]byte(passwordInput.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
-		utils.NotFoundResponse(c, err.Error())
+		libs.NotFoundResponse(c, err.Error())
 		return
 	}
 
 	err = services.ChangePassword(&user, string(newPasswordHash))
 	if err != nil {
-		utils.NotFoundResponse(c, "could not change password")
+		libs.NotFoundResponse(c, "could not change password")
 		return
 	}
 

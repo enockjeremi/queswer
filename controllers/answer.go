@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/enockjeremi/queswer/libs"
 	"github.com/enockjeremi/queswer/models"
 	"github.com/enockjeremi/queswer/services"
-	"github.com/enockjeremi/queswer/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,19 +36,19 @@ func PostAnswer(c *gin.Context) {
 
 	answer.User = user
 	if err := c.ShouldBindBodyWithJSON(&answer); err != nil {
-		utils.BadRequestResponse(c, err)
+		libs.BadRequestResponse(c, err)
 		return
 	}
 	questionID := toString(answer.QuestionID)
 
 	err := services.GetOneQuestion(&question, questionID)
 	if err != nil {
-		utils.NotFoundResponse(c, "question not found")
+		libs.NotFoundResponse(c, "question not found")
 		return
 	} else {
 		err := services.CreateAnswer(&answer)
 		if err != nil {
-			utils.BadRequestResponse(c, err)
+			libs.BadRequestResponse(c, err)
 			return
 		} else {
 			c.JSON(http.StatusCreated, Response{
@@ -65,7 +65,7 @@ func GetOneAnswer(c *gin.Context) {
 	id := c.Params.ByName("id")
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		utils.NotFoundResponse(c, "answer not found")
+		libs.NotFoundResponse(c, "answer not found")
 		return
 	}
 	c.JSON(http.StatusOK, Response{
@@ -83,19 +83,19 @@ func PutAnswer(c *gin.Context) {
 
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		utils.NotFoundResponse(c, "answer not found")
+		libs.NotFoundResponse(c, "answer not found")
 		return
 	}
 	c.BindJSON(&answer)
 
 	if answer.UserID != userID {
-		utils.ForbiddenResponse(c, "operation not allowed")
+		libs.ForbiddenResponse(c, "operation not allowed")
 		return
 	}
 
 	err = services.UpdateAnswer(&answer)
 	if err != nil {
-		utils.NotFoundResponse(c, "could not update")
+		libs.NotFoundResponse(c, "could not update")
 		return
 	} else {
 		c.JSON(http.StatusOK, Response{
@@ -114,18 +114,18 @@ func DeleteAnswer(c *gin.Context) {
 
 	err := services.FindOneAnswer(&answer, id)
 	if err != nil {
-		utils.NotFoundResponse(c, "answer not found")
+		libs.NotFoundResponse(c, "answer not found")
 		return
 	}
 
 	if answer.UserID != userID {
-		utils.ForbiddenResponse(c, "operation not allowed")
+		libs.ForbiddenResponse(c, "operation not allowed")
 		return
 	}
 
 	err = services.DeleteAnswer(&answer, id)
 	if err != nil {
-		utils.NotFoundResponse(c, "could not delete")
+		libs.NotFoundResponse(c, "could not delete")
 		return
 	}
 

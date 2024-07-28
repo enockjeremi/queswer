@@ -1,15 +1,20 @@
 package models
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/lib/pq"
+)
 
 type Question struct {
 	Model
-	Title       string   `json:"title" binding:"required,min=6"`
-	Description string   `json:"description" binding:"required"`
-	Completed   bool     `json:"completed"`
-	Answer      []Answer `json:"answers" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-	UserID      uint     `json:"-"`
-	User        User     `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Title       string        `json:"title" binding:"required,min=6"`
+	Description string        `json:"description" binding:"required"`
+	Completed   bool          `json:"completed"`
+	Answer      []Answer      `json:"answers" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	UserID      uint          `json:"-"`
+	User        User          `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Likes       pq.Int64Array `gorm:"type:integer[]"`
 }
 
 func (q *Question) TableName() string {
@@ -29,6 +34,7 @@ func (q *Question) MarshalJSON() ([]byte, error) {
 			Description string        `json:"description"`
 			Completed   bool          `json:"completed"`
 			CreatedBy   CreatedByJSON `json:"createdBy"`
+			Likes       uint          `json:"likes"`
 			Answer      []Answer      `json:"-"`
 		}{
 			ID:          q.ID,
@@ -36,6 +42,7 @@ func (q *Question) MarshalJSON() ([]byte, error) {
 			Description: q.Description,
 			Completed:   q.Completed,
 			Answer:      q.Answer,
+			Likes:       uint(len(q.Likes)),
 			CreatedBy: CreatedByJSON{
 				ID:       q.User.ID,
 				Username: q.User.Username,
@@ -49,6 +56,7 @@ func (q *Question) MarshalJSON() ([]byte, error) {
 		Description string        `json:"description"`
 		Completed   bool          `json:"completed"`
 		CreatedBy   CreatedByJSON `json:"createdBy"`
+		Likes       uint          `json:"likes"`
 		Answer      []Answer      `json:"answers"`
 	}{
 		ID:          q.ID,
@@ -56,6 +64,7 @@ func (q *Question) MarshalJSON() ([]byte, error) {
 		Description: q.Description,
 		Completed:   q.Completed,
 		Answer:      q.Answer,
+		Likes:       uint(len(q.Likes)),
 		CreatedBy: CreatedByJSON{
 			ID:       q.User.ID,
 			Username: q.User.Username,

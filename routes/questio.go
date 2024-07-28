@@ -13,5 +13,6 @@ func QuestionRouter(g *gin.RouterGroup) {
 		g.POST("question", middlewares.CheckAuth, controllers.PostQuestion)
 		g.PUT("question/:id", middlewares.CheckAuth, controllers.PutQuestion)
 		g.DELETE("question/:id", middlewares.CheckAuth, controllers.DeleteQuestion)
+		g.PATCH("question/:id/like", middlewares.CheckAuth, controllers.LikeQuestion)
 	}
 }

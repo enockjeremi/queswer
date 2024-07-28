@@ -3,9 +3,9 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/enockjeremi/queswer/libs"
 	"github.com/enockjeremi/queswer/models"
 	"github.com/enockjeremi/queswer/services"
-	"github.com/enockjeremi/queswer/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,13 +36,13 @@ func PostQuestion(c *gin.Context) {
 	question.User = user
 
 	if err := c.ShouldBindBodyWithJSON(&question); err != nil {
-		utils.BadRequestResponse(c, err)
+		libs.BadRequestResponse(c, err)
 		return
 	}
 
 	err := services.CreateQuestion(&question)
 	if err != nil {
-		utils.BadRequestResponse(c, err)
+		libs.BadRequestResponse(c, err)
 		return
 	} else {
 		c.JSON(http.StatusCreated, Response{
@@ -58,7 +58,7 @@ func GetOneQuestion(c *gin.Context) {
 
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
-		utils.NotFoundResponse(c, "question not found")
+		libs.NotFoundResponse(c, "question not found")
 		return
 	} else {
 		c.JSON(http.StatusOK, Response{
@@ -76,19 +76,19 @@ func PutQuestion(c *gin.Context) {
 
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
-		utils.NotFoundResponse(c, "question not found")
+		libs.NotFoundResponse(c, "question not found")
 		return
 	}
 
 	if question.UserID != userID {
-		utils.ForbiddenResponse(c, "operation not allowed")
+		libs.ForbiddenResponse(c, "operation not allowed")
 		return
 	}
 	c.BindJSON(&question)
 
 	err = services.UpdateQuestion(&question)
 	if err != nil {
-		utils.NotFoundResponse(c, "could not update")
+		libs.NotFoundResponse(c, "could not update")
 		return
 	} else {
 		c.JSON(http.StatusOK, Response{
@@ -108,18 +108,18 @@ func DeleteQuestion(c *gin.Context) {
 
 	err := services.GetOneQuestion(&question, id)
 	if err != nil {
-		utils.NotFoundResponse(c, "question not found")
+		libs.NotFoundResponse(c, "question not found")
 		return
 	}
 
 	if question.UserID != userID {
-		utils.ForbiddenResponse(c, "operation not allowed")
+		libs.ForbiddenResponse(c, "operation not allowed")
 		return
 	}
 
 	err = services.DeleteQuestion(&question, id)
 	if err != nil {
-		utils.NotFoundResponse(c, "could not delete")
+		libs.NotFoundResponse(c, "could not delete")
 		return
 	}
 	c.JSON(http.StatusOK, Response{
@@ -127,4 +127,35 @@ func DeleteQuestion(c *gin.Context) {
 		Data:    &question,
 	})
 
+}
+
+func LikeQuestion(c *gin.Context) {
+	currentUser, _ := c.Get("currentUser")
+	questionId := c.Params.ByName("id")
+	userId := currentUser.(models.User).ID
+	var question models.Question
+
+	err := services.GetOneQuestion(&question, questionId)
+	if err != nil {
+		libs.NotFoundResponse(c, "question not found")
+		return
+	}
+
+	like := libs.ContainsInSlice(question.Likes, int64(userId))
+	if !like {
+		question.Likes = append(question.Likes, int64(userId))
+	} else {
+		question.Likes = libs.RemoveElement(question.Likes, int64(userId))
+	}
+
+	err = services.UpdateQuestion(&question)
+	if err != nil {
+		libs.NotFoundResponse(c, "could not update")
+		return
+	} else {
+		c.JSON(http.StatusOK, Response{
+			Success: true,
+			Data:    &question,
+		})
+	}
 }
