@@ -1,17 +1,17 @@
 package routes
 
 import (
-	"github.com/enockjeremi/queswer/controllers"
+	"github.com/enockjeremi/queswer/controllers/auth"
 	"github.com/enockjeremi/queswer/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
 func AuthRouter(g *gin.RouterGroup) {
 	{
-		g.POST("auth/sign-in", controllers.SignIn)
-		g.POST("auth/sign-up", controllers.SignUp)
-		g.GET("auth/profile", middlewares.CheckAuth, controllers.GetProfile)
-		g.PUT("auth/update-profile", middlewares.CheckAuth, controllers.UpdateProfile)
-		g.PATCH("auth/change-password", middlewares.CheckAuth, controllers.ChangePassword)
+		g.POST("auth/sign-in", auth.SignIn)
+		g.POST("auth/sign-up", auth.SignUp)
+		g.GET("auth/profile", middlewares.CheckAuth, auth.GetProfile)
+		g.PUT("auth/update-profile", middlewares.CheckAuth, auth.UpdateProfile)
+		g.PATCH("auth/change-password", middlewares.CheckAuth, auth.ChangePassword)
 	}
 }
