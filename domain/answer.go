@@ -1,4 +1,4 @@
-package models
+package domain
 
 import "encoding/json"
 
@@ -12,6 +12,26 @@ type Answer struct {
 
 func (a *Answer) TableName() string {
 	return "answer"
+}
+
+type AnswerRepository interface {
+	GetAll() ([]Answer, error)
+	Create(answer *Answer) error
+	GetOne(answer *Answer, id string) error
+	Update(answer *Answer) error
+	Delete(answer *Answer, id string) error
+
+	GetOneQuestion(Question *Question, id string) error
+}
+
+type AnswerUsecase interface {
+	GetAllAnswer() ([]Answer, error)
+	CreateAnswer(answer *Answer) error
+	GetAnswer(answer *Answer, id string) error
+	UpdateAnswer(answer *Answer) error
+	RemoveAnswer(answer *Answer, id string) error
+
+	GetQuestion(question *Question, id string) error
 }
 
 func (a *Answer) MarshalJSON() ([]byte, error) {

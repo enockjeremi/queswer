@@ -1,9 +1,8 @@
-package libs
+package utils
 
 import (
 	"net/http"
 
-	"github.com/enockjeremi/queswer/formatter"
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,7 +32,7 @@ func BadRequestResponse(c *gin.Context, err error) {
 			Message map[string]string `json:"message"`
 		}{
 			Code:    400,
-			Message: formatter.NewErrorFormatter().Formatter(err),
+			Message: NewErrorFormatter().Formatter(err),
 		},
 	})
 }
