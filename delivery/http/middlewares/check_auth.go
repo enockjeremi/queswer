@@ -7,18 +7,21 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enockjeremi/queswer/libs"
-	"github.com/enockjeremi/queswer/models"
-	"github.com/enockjeremi/queswer/services"
+	"github.com/enockjeremi/queswer/config"
+	"github.com/enockjeremi/queswer/domain"
+	"github.com/enockjeremi/queswer/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"gorm.io/gorm"
 )
+
+var DB *gorm.DB
 
 func CheckAuth(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 
 	if authHeader == "" {
-		libs.UnauthorizedResponse(c, "authorization header is missing")
+		utils.UnauthorizedResponse(c, "authorization header is missing")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -32,28 +35,28 @@ func CheckAuth(c *gin.Context) {
 		return []byte(os.Getenv("jWT_SECRET")), nil
 	})
 	if err != nil || !token.Valid {
-		libs.UnauthorizedResponse(c, "invalid or expired token")
+		utils.UnauthorizedResponse(c, "invalid or expired token")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		libs.UnauthorizedResponse(c, "invalid token")
+		utils.UnauthorizedResponse(c, "invalid token")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	if float64(time.Now().Unix()) > claims["exp"].(float64) {
-		libs.UnauthorizedResponse(c, "token expired")
+		utils.UnauthorizedResponse(c, "token expired")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	var user models.User
-	err = services.GetUser(&user, fmt.Sprintf("%v", (claims["id"])))
-	if err != nil {
-		libs.UnauthorizedResponse(c, "could not authenticate user")
+	userID := fmt.Sprintf("%v", (claims["id"]))
+	var user domain.User
+	if err := config.DB.Where("id = ?", userID).Preload("Profile").First(&user).Error; err != nil {
+		utils.UnauthorizedResponse(c, "could not authenticate user")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}

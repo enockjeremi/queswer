@@ -1,4 +1,4 @@
-package libs
+package utils
 
 //RemoveElement removes an element within the slice
 //Takes two parameters that must be of the same type and returns a new slice

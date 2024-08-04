@@ -1,4 +1,4 @@
-package models
+package domain
 
 import (
 	"encoding/json"
@@ -21,33 +21,26 @@ func (q *Question) TableName() string {
 	return "question"
 }
 
+type QuestionRepository interface {
+	GetAll() ([]Question, error)
+	Create(question *Question) error
+	GetOne(question *Question, id string) error
+	Update(question *Question) error
+	Delete(question *Question, id string) error
+}
+
+type QuestionUsecase interface {
+	GetAllQuestion() ([]Question, error)
+	CreateQuestion(question *Question) error
+	GetQuestion(question *Question, id string) error
+	UpdateQuestion(question *Question) error
+	RemoveQuestion(question *Question, id string) error
+}
+
 func (q *Question) MarshalJSON() ([]byte, error) {
 	type CreatedByJSON struct {
 		ID       uint   `json:"id"`
 		Username string `json:"username"`
-	}
-
-	if q.Answer == nil {
-		return json.Marshal(struct {
-			ID          uint          `json:"id"`
-			Title       string        `json:"title"`
-			Description string        `json:"description"`
-			Completed   bool          `json:"completed"`
-			CreatedBy   CreatedByJSON `json:"createdBy"`
-			Likes       uint          `json:"likes"`
-			Answer      []Answer      `json:"-"`
-		}{
-			ID:          q.ID,
-			Title:       q.Title,
-			Description: q.Description,
-			Completed:   q.Completed,
-			Answer:      q.Answer,
-			Likes:       uint(len(q.Likes)),
-			CreatedBy: CreatedByJSON{
-				ID:       q.User.ID,
-				Username: q.User.Username,
-			},
-		})
 	}
 
 	return json.Marshal(struct {

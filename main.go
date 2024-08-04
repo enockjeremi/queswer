@@ -5,10 +5,11 @@ import (
 	"log"
 
 	"github.com/enockjeremi/queswer/config"
-	"github.com/enockjeremi/queswer/formatter"
-	"github.com/enockjeremi/queswer/middlewares"
-	"github.com/enockjeremi/queswer/models"
-	"github.com/enockjeremi/queswer/routes"
+	"github.com/enockjeremi/queswer/delivery/http"
+	"github.com/enockjeremi/queswer/repository"
+	"github.com/enockjeremi/queswer/usecase"
+	"github.com/enockjeremi/queswer/utils"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -26,15 +27,19 @@ func main() {
 		fmt.Println("statuse: ", err)
 	}
 
-	config.DB.AutoMigrate(
-		&models.Question{},
-		&models.Answer{},
-		&models.User{},
-		&models.Profile{},
-	)
+	r := gin.Default()
+	questionRepo := repository.NewQuestionRepository(config.DB)
+	questionUsecase := usecase.NewQuestionUsecase(questionRepo)
+	http.NewQuestionHandler(r, questionUsecase)
 
-	r := routes.SetupRoute()
-	r.Use(middlewares.ErrorHandling())
-	formatter.NewErrorFormatter().LengFormatter("en")
+	answerRepo := repository.NewAnswerRepository(config.DB)
+	answerUsecase := usecase.NewAnswerUsecase(answerRepo)
+	http.NewAnswerHandler(r, answerUsecase)
+
+	authRepo := repository.NewAuthRepository(config.DB)
+	authUsecase := usecase.NewAuthUsecase(authRepo)
+	http.NewAuthHandler(r, authUsecase)
+
+	utils.NewErrorFormatter().LengFormatter("en")
 	r.Run(":1341")
 }
