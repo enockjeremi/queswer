@@ -11,7 +11,7 @@ type Question struct {
 	Title       string        `json:"title" binding:"required,min=6"`
 	Description string        `json:"description" binding:"required"`
 	Completed   bool          `json:"completed"`
-	Answer      []Answer      `json:"answers" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Answers     []Answer      `json:"answers" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	UserID      uint          `json:"-"`
 	User        User          `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Likes       pq.Int64Array `gorm:"type:integer[]"`
@@ -50,13 +50,13 @@ func (q *Question) MarshalJSON() ([]byte, error) {
 		Completed   bool          `json:"completed"`
 		CreatedBy   CreatedByJSON `json:"createdBy"`
 		Likes       uint          `json:"likes"`
-		Answer      []Answer      `json:"answers"`
+		Answers     []Answer      `json:"answers"`
 	}{
 		ID:          q.ID,
 		Title:       q.Title,
 		Description: q.Description,
 		Completed:   q.Completed,
-		Answer:      q.Answer,
+		Answers:     q.Answers,
 		Likes:       uint(len(q.Likes)),
 		CreatedBy: CreatedByJSON{
 			ID:       q.User.ID,

@@ -1,13 +1,18 @@
 package domain
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/lib/pq"
+)
 
 type Answer struct {
 	Model
-	Content    string `json:"content" binding:"required"`
-	QuestionID uint   `json:"questionId" binding:"required"`
-	UserID     uint   `json:"-"`
-	User       User   `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Answer     string        `json:"answer" binding:"required"`
+	QuestionID uint          `json:"questionId" binding:"required"`
+	UserID     uint          `json:"-"`
+	User       User          `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Likes      pq.Int64Array `gorm:"type:integer[]"`
 }
 
 func (a *Answer) TableName() string {
@@ -42,11 +47,13 @@ func (a *Answer) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(struct {
 		ID        uint          `json:"id"`
-		Content   string        `json:"content"`
+		Answer    string        `json:"answer"`
+		Likes     uint          `json:"likes"`
 		CreatedBy CreatedByJSON `json:"createdBy"`
 	}{
-		ID:      a.ID,
-		Content: a.Content,
+		ID:     a.ID,
+		Answer: a.Answer,
+		Likes:  uint(len(a.Likes)),
 		CreatedBy: CreatedByJSON{
 			ID:       a.User.ID,
 			Username: a.User.Username,

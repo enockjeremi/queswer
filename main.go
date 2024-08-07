@@ -6,6 +6,7 @@ import (
 
 	"github.com/enockjeremi/queswer/config"
 	"github.com/enockjeremi/queswer/delivery/http"
+	"github.com/enockjeremi/queswer/domain"
 	"github.com/enockjeremi/queswer/repository"
 	"github.com/enockjeremi/queswer/usecase"
 	"github.com/enockjeremi/queswer/utils"
@@ -25,6 +26,15 @@ func main() {
 	})
 	if err != nil {
 		fmt.Println("statuse: ", err)
+	}
+
+	if err := config.DB.AutoMigrate(
+		&domain.Question{},
+		&domain.Answer{},
+		&domain.User{},
+		&domain.Profile{},
+	); err != nil {
+		panic("failed to auto-migrate schema")
 	}
 
 	r := gin.Default()

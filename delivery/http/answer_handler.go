@@ -26,6 +26,8 @@ func NewAnswerHandler(r *gin.Engine, au domain.AnswerUsecase) {
 	v1.POST("answer", middlewares.CheckAuth, handler.CreateAnswer)
 	v1.PUT("answer/:id", middlewares.CheckAuth, handler.UpdateAnswer)
 	v1.DELETE("answer/:id", middlewares.CheckAuth, handler.RemoveAnswer)
+
+	v1.PATCH("/answer/:id/like", middlewares.CheckAuth, handler.LikeAnswer)
 }
 
 func (h *AnswerHandler) GetAllAnswer(c *gin.Context) {
@@ -118,9 +120,12 @@ func (h *AnswerHandler) UpdateAnswer(c *gin.Context) {
 		utils.NotFoundResponse(c, "could not update")
 		return
 	} else {
-		c.JSON(http.StatusOK, Response{
+		c.JSON(http.StatusOK, struct {
+			Success bool   `json:"success"`
+			Message string `json:"message"`
+		}{
 			Success: true,
-			Data:    &answer,
+			Message: "updated successfully",
 		})
 	}
 }
@@ -149,9 +154,46 @@ func (h *AnswerHandler) RemoveAnswer(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, Response{
+	c.JSON(http.StatusOK, struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}{
 		Success: true,
-		Data:    &answer,
+		Message: "deleted successfully",
 	})
 
+}
+
+func (h *AnswerHandler) LikeAnswer(c *gin.Context) {
+	currentUser, _ := c.Get("currentUser")
+	answerId := c.Params.ByName("id")
+	userId := currentUser.(domain.User).ID
+	var answer domain.Answer
+
+	err := h.AnswerUsecase.GetAnswer(&answer, answerId)
+	if err != nil {
+		utils.NotFoundResponse(c, "answer not found")
+		return
+	}
+
+	like := utils.ContainsInSlice(answer.Likes, int64(userId))
+	if !like {
+		answer.Likes = append(answer.Likes, int64(userId))
+	} else {
+		answer.Likes = utils.RemoveElement(answer.Likes, int64(userId))
+	}
+
+	err = h.AnswerUsecase.UpdateAnswer(&answer)
+	if err != nil {
+		utils.NotFoundResponse(c, "could not update")
+		return
+	} else {
+		c.JSON(http.StatusOK, struct {
+			Success bool   `json:"success"`
+			Message string `json:"message"`
+		}{
+			Success: true,
+			Message: "like added successfully",
+		})
+	}
 }

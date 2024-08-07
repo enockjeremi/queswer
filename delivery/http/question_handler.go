@@ -51,7 +51,7 @@ func (h *QuestionHandler) GetAllQuestion(c *gin.Context) {
 func (h *QuestionHandler) GetQuestion(c *gin.Context) {
 	id := c.Params.ByName("id")
 	var question domain.Question
-
+	fmt.Println(question)
 	err := h.QuestionUsecase.GetQuestion(&question, id)
 	if err != nil {
 		utils.NotFoundResponse(c, "question not found")
@@ -70,7 +70,7 @@ func (h *QuestionHandler) CreateQuestion(c *gin.Context) {
 	fmt.Println(ok)
 	user := currentUser.(domain.User)
 
-	question.Answer = make([]domain.Answer, 0)
+	question.Answers = make([]domain.Answer, 0)
 	question.User = user
 
 	if err := c.ShouldBindBodyWithJSON(&question); err != nil {
@@ -115,9 +115,12 @@ func (h *QuestionHandler) UpdateQuestion(c *gin.Context) {
 		utils.NotFoundResponse(c, "could not update")
 		return
 	} else {
-		c.JSON(http.StatusOK, Response{
+		c.JSON(http.StatusOK, struct {
+			Success bool   `json:"success"`
+			Message string `json:"message"`
+		}{
 			Success: true,
-			Data:    &question,
+			Message: "updated successfully",
 		})
 	}
 
@@ -146,9 +149,12 @@ func (h *QuestionHandler) RemoveQuestion(c *gin.Context) {
 		utils.NotFoundResponse(c, "could not delete")
 		return
 	}
-	c.JSON(http.StatusOK, Response{
+	c.JSON(http.StatusOK, struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}{
 		Success: true,
-		Data:    &question,
+		Message: "deleted successfully",
 	})
 
 }
@@ -177,9 +183,12 @@ func (h *QuestionHandler) LikeQuestion(c *gin.Context) {
 		utils.NotFoundResponse(c, "could not update")
 		return
 	} else {
-		c.JSON(http.StatusOK, Response{
+		c.JSON(http.StatusOK, struct {
+			Success bool   `json:"success"`
+			Message string `json:"message"`
+		}{
 			Success: true,
-			Data:    &question,
+			Message: "like added successfully",
 		})
 	}
 }

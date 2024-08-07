@@ -27,7 +27,7 @@ func (r *answerRepository) Create(answer *domain.Answer) (err error) {
 }
 
 func (r *answerRepository) GetOne(answer *domain.Answer, id string) (err error) {
-	if err = r.DB.Model(&answer).Where("id = ?", id).Preload("Answer.User").Preload("User").First(&answer).Error; err != nil {
+	if err = r.DB.Model(&answer).Where("id = ?", id).Preload("User").First(&answer).Error; err != nil {
 		return err
 	}
 	return nil
@@ -46,7 +46,7 @@ func (r *answerRepository) Delete(answer *domain.Answer, id string) (err error) 
 //GET QUESTION
 
 func (r *answerRepository) GetOneQuestion(question *domain.Question, id string) (err error) {
-	if err = r.DB.Model(&question).Where("id = ?", id).Preload("Answer.User").Preload("User").First(&question).Error; err != nil {
+	if err = r.DB.Model(&question).Where("id = ?", id).Preload("Answers.User").Preload("User").First(&question).Error; err != nil {
 		return err
 	}
 	return nil
